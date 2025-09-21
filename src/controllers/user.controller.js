@@ -27,8 +27,8 @@ const registerUser = asyncHandler( async(req,res) => {
         throw new ApiError(400, "all fields are required"); //validation
     }
 
-    const existedUser = User.findOne({  
-        $or:[{username},{email}]
+    const existedUser = await User.findOne({  
+        $or:[{username},{email}] //check in db whether user exists or not
     })
 
     if(existedUser){  //validation for username and email
@@ -46,7 +46,7 @@ const registerUser = asyncHandler( async(req,res) => {
     const coverImage = await uploadOnCloudinary(coverImageLocalPath);
 
     if(!avatar){
-        throw new ApiError(400," Avatar file is required");
+        throw new ApiError(400," Avatar file is required to upload");
     }
 
     const user = await User.create({
@@ -57,7 +57,8 @@ const registerUser = asyncHandler( async(req,res) => {
         password,
         username: username.toLowerCase()
     })
-    const createdUser = await User.findById(user._id).select("-password -refreshToken"); // select ka use yahan par koun koun se field select hoke nh aayege
+
+    const createdUser = await User.findById(user._id).select("-password -refreshToken"); // select ka use yahan par hai ki koun koun se field select hoke nh aayege
 
     if(!createdUser){
         throw new ApiError(500, "Something went wrong while registering the user")
@@ -66,8 +67,6 @@ const registerUser = asyncHandler( async(req,res) => {
     return res.status(201).json(
         new ApiResponse(200, "User registered Successfully!!")
     )
-
-
 })
 
 export {registerUser}
