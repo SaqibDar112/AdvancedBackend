@@ -145,8 +145,8 @@ const logoutUser = asyncHandler(async(req,res)=>{
     await User.findByIdAndUpdate(
         req.user._id,
         {
-            $set:{
-                refreshToken : undefined
+            $unset:{
+                refreshToken : 1, //this removes the field from the document
             }
         },
         {
@@ -216,7 +216,9 @@ const changeCurrentPassword = asyncHandler (async(req,res)=>{
     }
     user.password= NewPassword;
     await user.save({validateBeforeSave: false})
-
+    if(OldPassword === NewPassword){
+        throw new ApiError(401,"Old and NewPassword should be different");
+    }
     return res
     .status(200)
     .json(new ApiResponse(200,{},"Password changed successfully"));
@@ -342,7 +344,7 @@ const getUserChannelProfile = asyncHandler(async(req,res)=>{
                 from:"subscriptions",
                 localField: "_id",
                 foreignField: "subscriber",
-                as: "subscribedTO"
+                as: "subscribedTo"
             }
         },
 
@@ -352,11 +354,11 @@ const getUserChannelProfile = asyncHandler(async(req,res)=>{
                     $size: "$subscribers"
                 },
                 channelsSubscribedToCount:{
-                    $size: "subscribedTo"
+                    $size: "$subscribedTo"
                 },
                 isSubscribed:{
                     $cond:{
-                        if: {$in: [req.user?._id,"$subscibers.subscriber"]},  //in checks whether subscribed or not  & $in works on both array as well as on objects
+                        if: {$in: [req.user?._id,"$subscribers.subscriber"]},  //in checks whether subscribed or not  & $in works on both array as well as on objects
                         then:true,
                         else:false,
                     }
@@ -423,7 +425,7 @@ const getWatchHistory = asyncHandler(async(req,res)=>{
                     {
                         $addFields:{
                             owner:{
-                                $first: "owner"
+                                $first: "$owner"
                             }
                         }
                     }
