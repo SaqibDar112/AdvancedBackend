@@ -20,8 +20,12 @@ app.use(cookieParser()) //cookies se agar aaya or bej diya
 
 // router imports
 import userRouter from './routes/user.routes.js'
+import tweetRouter from "./routes/tweet.routes.js"
+
+
 // app.use("/users",userRouter)    //http://localhost:8000/users/
-app.use("/api/v1/users/",userRouter)  //best practice http://localhost:8000/api/v1/users/
+app.use("/api/v1/users/",userRouter);  //best practice http://localhost:8000/api/v1/users/
+app.use('/api/v1/users/',tweetRouter);
 
 
 export default app;
